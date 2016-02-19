@@ -1,0 +1,6 @@
+[raspi]
+your-raspi-ip-or-hostname
+
+[raspi:vars]
+ansible_ssh_user=pi
+ansible_ssh_pass=raspberry

@@ -1,0 +1,28 @@
+---
+
+- name: Ensure new User is present
+  user:
+    name={{ user_name }}
+    group={{ user_group }}
+    generate_ssh_key=yes
+    shell="/bin/bash"
+    state=present
+  register: newuser
+
+- name: Set user password
+  shell: usermod -p $(echo '{{ user_pass }}' | openssl passwd -1 -stdin) {{ user_name }}
+  when: newuser.changed
+
+- name: Upload the local id_rsa.pub key
+  authorized_key:
+    user={{ user_name }}
+    key="{{ lookup('file', '{{ ssh_pub_key }}') }}"
+
+- name: Enable passwordless sudo
+  lineinfile:
+    dest=/etc/sudoers
+    state=present
+    regexp="^{{ user_name }}"
+    line="{{ user_name }}\tALL=(ALL:ALL) NOPASSWD:ALL"
+    insertafter=EOF
+    validate='visudo -cf %s'

@@ -1,0 +1,15 @@
+---
+
+# Configure the Timezone
+- name: Update Timezone to Etc/UTC
+  copy:
+    dest=/etc/timezone
+    content="Etc/UTC\n"
+    owner=root
+    group=root
+    mode=0644
+  register: timezone
+
+- name: Reconfigure Timezone Data
+  shell: dpkg-reconfigure -f noninteractive tzdata
+  when: timezone.changed

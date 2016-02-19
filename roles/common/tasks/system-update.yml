@@ -1,0 +1,24 @@
+---
+
+- name: Update System Package Cache
+  apt: update_cache=yes cache_valid_time=86400 upgrade=full
+
+- name: Install packages
+  apt: name={{ item }} state=latest
+  with_items: install_packages
+
+- name: Rebooting if needed...
+  command: shutdown -r now removes=/var/run/reboot-required
+  async: 0
+  poll: 0
+  ignore_errors: true
+  register: restarted
+
+- name: Waiting for reboot...
+  local_action:
+    wait_for
+      host={{ ansible_host }}
+      state=started
+      timeout=30
+  when: restarted.changed
+

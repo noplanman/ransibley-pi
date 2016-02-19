@@ -1,0 +1,21 @@
+---
+
+# New user
+user_name: raspi
+user_pass: # can be left empty!
+user_group: sudo
+
+# Public key to upload to the new user
+ssh_pub_key: ~/.ssh/id_rsa.pub
+
+# Install necessary packages
+install_packages:
+  - curl
+  - git
+  - glances
+  - nano
+  - openssl
+
+# Nginx
+server_name: _
+web_root: /var/www/html

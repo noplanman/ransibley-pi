@@ -1,0 +1,16 @@
+---
+
+- name: Ensure nginx is present
+  apt: name=nginx-full state=latest
+
+- name: Ensure nginx default configuration
+  template:
+    src=nginx.j2
+    dest=/etc/nginx/sites-available/default
+    owner=root
+    group=root
+    mode=0644
+  notify: restart nginx
+
+- name: Ensure nginx is started
+  service: name=nginx state=started enabled=yes

@@ -1,0 +1,6 @@
+---
+
+- include: timezone.yml
+- include: system-update.yml
+- include: user.yml
+- include: ssh.yml

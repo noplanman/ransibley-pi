@@ -1,0 +1,11 @@
+---
+- name: Default setup config for Raspberry Pi
+  hosts: all
+  remote_user: root
+  become: yes
+
+  roles:
+    - common
+#    - mysql
+#    - nginx
+#    - php-fpm
