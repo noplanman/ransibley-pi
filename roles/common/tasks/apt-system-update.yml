@@ -5,7 +5,11 @@
 
 - name: Install packages
   apt: name={{ item }} state=latest
-  with_items: install_packages
+  with_items: install_packages|default([])
+
+- name: Remove packages
+  apt: name={{ item }} state=absent
+  with_items: remove_packages|default([])
 
 - name: Rebooting if needed...
   command: shutdown -r now removes=/var/run/reboot-required

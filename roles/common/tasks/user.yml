@@ -9,9 +9,27 @@
     state=present
   register: newuser
 
-- name: Set user password
-  shell: usermod -p $(echo '{{ user_pass }}' | openssl passwd -1 -stdin) {{ user_name }}
-  when: newuser.changed
+# Set the entered password
+- name: Set defined user password
+  shell: "usermod -p $(echo '{{ user_pass }}' | openssl passwd -1 -stdin) {{ user_name }}"
+  when: newuser.changed and user_pass
+
+- debug: msg={{ user_pass }}
+  when: newuser.changed and user_pass
+
+# Generate a new random password and set it
+- name: Generate password if empty
+  command: pwgen -cnsvB 64 1
+  register: new_user_pass
+  when: newuser.changed and not user_pass
+
+- name: Set new user password
+  shell: "usermod -p $(echo '{{ new_user_pass.stdout }}' | openssl passwd -1 -stdin) {{ user_name }}"
+  when: newuser.changed and not user_pass
+
+- debug: msg={{ new_user_pass.stdout }}
+  when: newuser.changed and not user_pass
+
 
 - name: Upload the local id_rsa.pub key
   authorized_key:

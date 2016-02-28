@@ -2,7 +2,7 @@
 
 # New user
 user_name: raspi
-user_pass: # can be left empty!
+user_pass: # if empty one will be generated!
 user_group: sudo
 
 # Public key to upload to the new user
@@ -10,11 +10,18 @@ ssh_pub_key: ~/.ssh/id_rsa.pub
 
 # Install necessary packages
 install_packages:
+  - pwgen #required!
   - curl
   - git
   - glances
   - nano
   - openssl
+
+remove_packages:
+#  - package_name
+
+apt_sources:
+  - {d: 'deb', u: 'http://repozytorium.mati75.eu/raspbian', p: 'jessie-backports main contrib non-free'}
 
 # Nginx
 server_name: _

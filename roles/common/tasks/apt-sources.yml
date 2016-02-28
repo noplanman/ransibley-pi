@@ -1,0 +1,8 @@
+---
+
+- name: Add all sources
+  lineinfile:
+    dest=/etc/apt/sources.list
+    regexp='^{{ item.d }} (.*){{ item.u }} {{ item.p }}$'
+    line='{{ item.d }} {{ item.u }} {{ item.p }}'
+  with_items: apt_sources|default([])

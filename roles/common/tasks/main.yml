@@ -1,6 +1,8 @@
 ---
 
+- include: apt-sources.yml
+- include: apt-tor.yml
 - include: timezone.yml
-- include: system-update.yml
+- include: apt-system-update.yml
 - include: user.yml
 - include: ssh.yml
