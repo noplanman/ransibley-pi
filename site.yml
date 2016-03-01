@@ -2,6 +2,7 @@
 - name: Default setup config for Raspberry Pi
   hosts: all
   remote_user: root
+  gather_facts: false
   become: yes
 
   roles:

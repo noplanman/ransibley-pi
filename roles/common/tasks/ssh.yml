@@ -5,11 +5,11 @@
 
 - name: Update sshd_config Parameters
   lineinfile:
-    dest=/etc/ssh/sshd_config
-    state=present
-    regexp="^{{ item.key }}"
-    line="{{ item.key }} {{ item.value }}"
-    insertafter=EOF
+    dest: /etc/ssh/sshd_config
+    state: present
+    regexp: "^{{ item.key }}"
+    line: "{{ item.key }} {{ item.value }}"
+    insertafter: EOF
   with_items:
     - { key: 'PermitRootLogin', value: 'no' }
     - { key: 'LoginGraceTime', value: '20' }

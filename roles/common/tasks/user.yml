@@ -2,45 +2,37 @@
 
 - name: Ensure new User is present
   user:
-    name={{ user_name }}
-    group={{ user_group }}
-    generate_ssh_key=yes
-    shell="/bin/bash"
-    state=present
-  register: newuser
+    name: "{{ user_name }}"
+    group: "{{ user_group }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 4096
+    shell: "/bin/bash"
+    state: present
+  register: new_user
 
-# Set the entered password
-- name: Set defined user password
-  shell: "usermod -p $(echo '{{ user_pass }}' | openssl passwd -1 -stdin) {{ user_name }}"
-  when: newuser.changed and user_pass
-
-- debug: msg={{ user_pass }}
-  when: newuser.changed and user_pass
-
-# Generate a new random password and set it
-- name: Generate password if empty
+# Generate a new random password
+- name: Generate password
   command: pwgen -cnsvB 64 1
-  register: new_user_pass
-  when: newuser.changed and not user_pass
+  register: user_pass
+  when: new_user.changed
 
 - name: Set new user password
-  shell: "usermod -p $(echo '{{ new_user_pass.stdout }}' | openssl passwd -1 -stdin) {{ user_name }}"
-  when: newuser.changed and not user_pass
+  shell: "usermod -p $(echo '{{ user_pass.stdout }}' | openssl passwd -1 -stdin) {{ user_name }}"
+  when: new_user.changed
 
-- debug: msg={{ new_user_pass.stdout }}
-  when: newuser.changed and not user_pass
-
+# Output the new password.
+- debug: msg={{ user_pass.stdout }}
+  when: new_user.changed
 
 - name: Upload the local id_rsa.pub key
   authorized_key:
-    user={{ user_name }}
-    key="{{ lookup('file', '{{ ssh_pub_key }}') }}"
+    user: "{{ user_name }}"
+    key: "{{ lookup('file', '{{ ssh_pub_key }}') }}"
 
 - name: Enable passwordless sudo
   lineinfile:
-    dest=/etc/sudoers
-    state=present
-    regexp="^{{ user_name }}"
-    line="{{ user_name }}\tALL=(ALL:ALL) NOPASSWD:ALL"
-    insertafter=EOF
-    validate='visudo -cf %s'
+    dest: /etc/sudoers
+    state: present
+    regexp: "^{{ user_name }}"
+    line: "{{ user_name }}\tALL=(ALL:ALL) NOPASSWD:ALL"
+    validate: 'visudo -cf %s'

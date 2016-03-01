@@ -1,0 +1,40 @@
+---
+
+- name: Generate locale
+  locale_gen: name=en_US.UTF-8 state=present
+
+- name: Update Timezone to Etc/UTC
+  copy:
+    content="Etc/UTC\n"
+    dest=/etc/timezone
+    owner=root
+    group=root
+    mode=0644
+    backup=yes
+  notify:
+    - update timezone
+
+- name: Set hostname
+  hostname: name={{ host_name }}
+  when: host_name != None
+
+- name: Expand file system
+  raw: hash raspi-config && sudo raspi-config nonint do_expand_rootfs
+  run_once: true
+  ignore_errors: true
+  register: expand_rootfs
+
+- name: Rebooting if needed...
+  command: shutdown -r now
+  async: 0
+  poll: 0
+  ignore_errors: true
+  when: expand_rootfs.changed
+
+- name: Waiting for reboot...
+  local_action:
+    wait_for
+      host={{ ansible_host }}
+      state=started
+      timeout=30
+  when: expand_rootfs.changed

@@ -1,28 +1,35 @@
 ---
 
+# Set hostname
+host_name: ransibley-pi
+
 # New user
-user_name: raspi
-user_pass: # if empty one will be generated!
+user_name: pi
 user_group: sudo
 
 # Public key to upload to the new user
 ssh_pub_key: ~/.ssh/id_rsa.pub
 
+apt_keys:
+  - { keyserver: 'pgpkeys.mit.edu', id: 'CCD91D6111A06851' } #repozytorium.mati75.eu
+
+# Sources need "tor+" prefix, since we're fetching via tor!
+apt_sources:
+  - deb tor+http://repozytorium.mati75.eu/raspbian jessie-backports main contrib non-free
+
 # Install necessary packages
-install_packages:
-  - pwgen #required!
+apt_install_packages:
+  - pwgen #required for user password generation!
   - curl
   - git
   - glances
   - nano
   - openssl
 
-remove_packages:
+# Remove any specified packages
+apt_remove_packages:
 #  - package_name
 
-apt_sources:
-  - {d: 'deb', u: 'http://repozytorium.mati75.eu/raspbian', p: 'jessie-backports main contrib non-free'}
-
 # Nginx
-server_name: _
-web_root: /var/www/html
+# server_name: _
+# web_root: /var/www/html

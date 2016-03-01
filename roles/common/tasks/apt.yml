@@ -1,0 +1,55 @@
+---
+
+- name: APT - Install apt-transport-tor package
+  apt: name=apt-transport-tor state=latest update_cache=yes cache_valid_time=3600
+
+- name: APT - Set sources to use tor
+  replace:
+    dest: /etc/apt/sources.list
+    regexp: '^(.*) http(.*)$'
+    replace: '\1 tor+http\2'
+    backup: yes
+
+
+- name: APT - Add all repository GPG keys
+  apt_key: keyserver={{ item.keyserver }} id={{ item.id }} state=present
+  with_items: apt_keys|default([])
+  when: apt_keys
+
+- name: APT - Add all repository sources
+  apt_repository: repo={{ item }} update_cache=yes
+  with_items: apt_sources|default([])
+  when: apt_sources
+
+
+- name: APT - Install packages
+  apt: name={{ item }} state=latest
+  with_items: apt_install_packages|default([])
+  when: apt_install_packages
+
+- name: APT - Remove packages
+  apt: name={{ item }} state=absent
+  with_items: apt_remove_packages|default([])
+  when: apt_remove_packages
+
+
+- name: APT - Full system update
+  apt: update_cache=yes cache_valid_time=3600 upgrade=full
+#  ignore_errors: true
+
+
+- name: Rebooting if needed...
+  command: shutdown -r now removes=/var/run/reboot-required
+  async: 0
+  poll: 0
+  ignore_errors: true
+  register: restarted
+
+- name: Waiting for reboot...
+  local_action:
+    wait_for
+      host={{ ansible_host }}
+      state=started
+      timeout=30
+  when: restarted.changed
+
