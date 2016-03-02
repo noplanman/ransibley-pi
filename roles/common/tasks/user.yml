@@ -10,6 +10,19 @@
     state: present
   register: new_user
 
+- name: Upload the local id_rsa.pub key
+  authorized_key:
+    user: "{{ user_name }}"
+    key: "{{ lookup('file', '{{ ssh_pub_key }}') }}"
+
+- name: Enable passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: "^{{ user_name }}\t"
+    line: "{{ user_name }}\tALL=(ALL:ALL) NOPASSWD:ALL"
+    validate: 'visudo -cf %s'
+
 # Generate a new random password
 - name: Generate password
   command: pwgen -cnsvB 64 1
@@ -20,19 +33,11 @@
   shell: "usermod -p $(echo '{{ user_pass.stdout }}' | openssl passwd -1 -stdin) {{ user_name }}"
   when: new_user.changed
 
-# Output the new password.
-- debug: msg={{ user_pass.stdout }}
+- name: Output new user password
+  debug: msg={{ user_pass.stdout }}
   when: new_user.changed
 
-- name: Upload the local id_rsa.pub key
-  authorized_key:
-    user: "{{ user_name }}"
-    key: "{{ lookup('file', '{{ ssh_pub_key }}') }}"
-
-- name: Enable passwordless sudo
-  lineinfile:
-    dest: /etc/sudoers
-    state: present
-    regexp: "^{{ user_name }}"
-    line: "{{ user_name }}\tALL=(ALL:ALL) NOPASSWD:ALL"
-    validate: 'visudo -cf %s'
+- name: Change ssh to new user password
+  set_fact:
+    ansible_password: "{{ user_pass.stdout }}"
+  when: new_user.changed
