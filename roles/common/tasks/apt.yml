@@ -1,5 +1,8 @@
 ---
 
+- name: APT - Update sources
+  apt: update_cache=yes cache_valid_time=3600
+
 - name: APT - Install apt-transport-tor package
   apt: name=apt-transport-tor state=latest update_cache=yes cache_valid_time=3600
 
@@ -34,7 +37,7 @@
 
 
 - name: APT - Full system update
-  apt: update_cache=yes cache_valid_time=3600 upgrade=full
+  apt: upgrade=full
 #  ignore_errors: true
 
 
